@@ -131,14 +131,11 @@ bool Client::sendFile(string filePath) {
 
 	int fileSize = fEnd - fBegin;
 
-	cout << "File's Size is" << fileSize << "bytes" << endl;
+	cout << "File's Size is " << fileSize << "bytes" << endl;
 
 	//发送文件的长度
 	_itoa_s(fileSize, Buff, 10);
 	send(sockfd, Buff, BUFFSIZE, 0);
-
-
-	
 
 	cout << "Begin to read file..." << endl;
 	file.seekg(0, ios::beg);

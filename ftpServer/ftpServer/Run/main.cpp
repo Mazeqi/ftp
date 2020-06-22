@@ -8,6 +8,7 @@
 #include<signal.h>
 #include<thread>
 #include<vector>
+#include<ostream>
 #pragma comment(lib,"ws2_32.lib")
 
 using namespace std;
@@ -108,7 +109,7 @@ int main() {
 
 		th->detach();
 	}
-	stopServerRunning(0);
+	//stopServerRunning(0);
 	//system("pause");
 	return 0;
 }

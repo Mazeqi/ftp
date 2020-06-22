@@ -11,7 +11,7 @@
 //void server(SOCKET s);
 Server::Server(SOCKET s):server(s) 
 {
-	storePath = "./file/";
+	storePath = "./temp/";
 }
 
 void Server::WelCome() {
@@ -75,7 +75,7 @@ bool Server::RecvFile(string filename) {
 	int fileLen = fileSize;
 	int recvLen = 0;
 	while (true) {
-
+		memset(Buff, 0, sizeof(Buff));
 		int len = recv(server, Buff, BUFFSIZE, 0);
 		if (len == -1) {
 			cout << "recv error" << errno << strerror(errno);
@@ -83,14 +83,14 @@ bool Server::RecvFile(string filename) {
 		}
 
 		storeFile.write(Buff, BUFFSIZE);
+		recvLen += BUFFSIZE;
+
+		cout << "Receive " << recvLen << "/" << fileSize << "  bytes\n";
 
 		fileLen -= BUFFSIZE;
 		if (fileLen <= 0) {
 			break;
 		}
-
-		recvLen += strlen(Buff);
-		cout << "Receive " << recvLen << "/" << fileSize << "  bytes\n";
 	}
 
 	storeFile.close();

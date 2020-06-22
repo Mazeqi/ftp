@@ -1,3 +1,2 @@
-﻿  main.cpp
-D:\VS_Project\ftp\ftpServer\ftpServer\Run\main.cpp(24,20): warning C4018: “<”: 有符号/无符号不匹配
+﻿  server.cpp
   ftpServer.vcxproj -> D:\VS_Project\ftp\ftpServer\Debug\ftpServer.exe
