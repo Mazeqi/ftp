@@ -140,6 +140,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Head\client.h" />
+    <ClInclude Include="Head\util.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="model\client.cpp" />
+    <ClCompile Include="model\util.cpp" />
+    <ClCompile Include="run\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
