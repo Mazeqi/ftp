@@ -72,11 +72,26 @@ bool Server::running() {
 			CMD cmd = commandParse(strVec, command);
 
 			switch (cmd) {
+				case ERR: {
+					cout << "Command is invalid \n";
+
+					memset(Buff, 0, BUFFSIZE);
+					string err = "Command is invalid \n";
+					strcpy(Buff, err.c_str());
+
+					if (send(server, Buff, BUFFSIZE, 0) == -1) {
+						cout << "Send Cmd is invalid Message occur error \n";
+						return false;
+					}
+
+					break;
+				}
 
 				case USER: {
 					User(strVec);
 					break;
 				}
+
 				case PASS: {
 					Pass(strVec);
 					break;

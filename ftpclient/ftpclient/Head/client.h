@@ -19,7 +19,8 @@ using namespace std;
 	ERR = 0,
 	USER = 1,
 	PASS = 2,
-	DIR  = 3
+	DIR  = 3,
+	CliDIR = 4
 } ;
 class Client {
 
@@ -40,6 +41,8 @@ public:
 	CMD commandParse(vector<string> &vec, string command);
 
 	void sendCommand(string command);
+
+	void cliDir();
 
 private:
 

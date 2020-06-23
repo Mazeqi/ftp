@@ -51,9 +51,30 @@ void Client::menu() {
 			case PASS:
 				sendCommand(command);
 				break;
+
+			case CliDIR: {
+				cliDir();
+				break;
+			}
 		}
 	}
 }
+
+void Client::cliDir() {
+	Util ut;
+	vector<string> dirVec;
+	dirVec = ut.dirFile("./");
+	if (dirVec.size() == 0) {
+		cout << "Have no file. \n";
+		return;
+	}
+	for (int i = 0; i < dirVec.size(); i++) {
+		cout << dirVec[i] << endl;
+	}
+
+
+}
+
 void Client::sendCommand(string command) {
 
 	memset(Buff, 0, BUFFSIZE);
@@ -164,14 +185,23 @@ CMD Client::commandParse(vector<string> &strVec,string command) {
 
 	strVec = ut.splitString(command, " ");
 
-	if (strVec.size() != 2) {
-		return ERR;
+	transform(strVec[0].begin(), strVec[0].end(), strVec[0].begin(), ::tolower);
+
+	int vecSize = strVec.size();
+
+	if (vecSize != 2) {
+		if (vecSize == 1 && (strVec[0] == "dir" || strVec[0] == "!dir")) {
+
+		}
+		else {
+			return ERR;
+		}
+	
 	}
 
-	
-	transform(strVec[0].begin(), strVec[0].end(), strVec[0].begin(), ::tolower);
-	
-
+	if (strVec[0] == "!dir") {
+		return CliDIR;
+	}
 	if (strVec[0] == "user") {
 		return USER;
 	}
@@ -180,9 +210,7 @@ CMD Client::commandParse(vector<string> &strVec,string command) {
 		return PASS;
 	}
 
-	if (strVec[0] == "dir") {
-		return DIR;
-	}
+	
 }
 
 
@@ -247,8 +275,6 @@ bool Client::sendFile(string filePath) {
 		if (sendLen >= fileSize) {
 			break;
 		}
-
-
 	}
 
 	file.close();

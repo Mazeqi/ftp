@@ -11,4 +11,6 @@ public:
 
 	vector<string> splitString(const string& str, const string& pattern);
 
+	vector<string> dirFile(string path);
+
 };
