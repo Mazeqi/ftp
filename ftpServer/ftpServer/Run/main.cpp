@@ -90,17 +90,8 @@ int main() {
 			printf("Accept error(%d): %s\n", errno, strerror(errno));
 			return -1;
 		}
-
-		/*memset(buff, 0, BUFFSIZE);
-
-		recv(connfd, buff, BUFFSIZE - 1, 0);
-
-		printf("Recv: %s\n", buff);
-
-		send(connfd, buff, strlen(buff), 0);
-
-		closesocket(connfd);*/
-
+		
+		
 		Server *server = new Server(connfd);
 
 		thread* th = new thread(&Server::running, server);
@@ -109,7 +100,7 @@ int main() {
 
 		th->detach();
 	}
-	//stopServerRunning(0);
+	stopServerRunning(0);
 	//system("pause");
 	return 0;
 }

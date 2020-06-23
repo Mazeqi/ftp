@@ -5,6 +5,8 @@
 #include<WinSock2.h>
 #include <Ws2tcpip.h>
 #include<iostream>
+#include<vector>
+#include<string>
 #pragma comment(lib,"Ws2_32.lib")
 
 #define BUFFSIZE 1024
@@ -13,16 +15,34 @@
 
 using namespace std;
 
+ enum CMD{
+	ERR = 0,
+	USER = 1,
+	PASS = 2,
+	DIR  = 3
+} ;
 class Client {
 
 public:
+
+	~Client();
+
 	bool running();
 
 	bool sendFile(string filePath);
 
 	bool recvFile();
 
+	void menu();
+
+	void User(vector<string> strVec);
+
+	CMD commandParse(vector<string> &vec, string command);
+
+	void sendCommand(string command);
+
 private:
+
 	SOCKET sockfd;
 
 	char Buff[BUFFSIZE];
