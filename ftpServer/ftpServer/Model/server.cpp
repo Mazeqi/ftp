@@ -47,14 +47,17 @@ bool Server::running() {
 	}
 	
 	while (true) {
-
-		//接收来自客户端的指令
-		if (recv(server, Buff, BUFFSIZE, 0) == 0) {
+		
+		if (!checkSock(server)) {
 			cout << "The client ip " << inet_ntoa(sa.sin_addr) << "client PORT " << ntohs(sa.sin_port)  <<" has closed. " << endl << endl;
 			return false;
 		}
 		else {
-		
+			if (recv(server, Buff, BUFFSIZE, 0) == -1) {
+				cout << "recv command error" << endl;
+				return false;
+			}
+			
 			cout << "Receive the client ip " << Client_ip << " client Port " << Client_Port << "'s command ."  << endl;
 			cout << "The Result : ";
 			
@@ -84,8 +87,33 @@ bool Server::running() {
 	}
 	
 	return true;
-	
 }
+
+bool Server::checkSock(int sock) {
+	fd_set   fds;
+	char buf[2];
+	int nbread;
+
+	FD_ZERO(&fds);
+	FD_SET(sock, &fds);
+
+	if (select(sock + 1, &fds, (fd_set*)0, (fd_set*)0, NULL) == -1) {
+		//log(LOG_ERR,"select(): %s\n",strerror(errno)) ;
+		return false;
+	}
+	if (!FD_ISSET(sock, &fds)) {
+		//log(LOG_ERR,"select() returns OK but FD_ISSET not\n") ;
+		return false;
+	}
+	/* read one byte from socket */
+	nbread = recv(sock, buf, 1, MSG_PEEK);
+	if (nbread <= 0) {
+		return false;
+	}
+		
+	return true;
+}
+
 void Server::Pass(vector<string> strVec) {
 
 	if (USER_Status == 0) {

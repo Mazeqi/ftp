@@ -35,6 +35,9 @@ public:
 
 	CMD commandParse(vector<string> &strVec, string command);
 
+	//检查sock是否还活着
+	bool checkSock(int scok);
+
 	void User(vector<string> strVec);
 
 	void Pass(vector<string> strVec);
