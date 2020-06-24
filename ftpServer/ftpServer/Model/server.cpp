@@ -14,7 +14,7 @@
 //void server(SOCKET s);
 Server::Server(SOCKET s):server(s) 
 {
-	storePath = "./file/";
+	storePath = "./file";
 	USER_Status = 0;
 	PASS_Status = 0;
 }
@@ -49,7 +49,7 @@ bool Server::running() {
 	while (true) {
 		
 		if (!checkSock(server)) {
-			cout << "The client ip " << inet_ntoa(sa.sin_addr) << "client PORT " << ntohs(sa.sin_port)  <<" has closed. " << endl << endl;
+			cout << "The client ip " << inet_ntoa(sa.sin_addr) << " client PORT " << ntohs(sa.sin_port)  <<" has closed. " << endl << endl;
 			return false;
 		}
 		else {
@@ -58,13 +58,13 @@ bool Server::running() {
 				return false;
 			}
 			
-			cout << "Receive the client ip " << Client_ip << " client Port " << Client_Port << "'s command ."  << endl;
-			cout << "The Result : ";
-			
 			Util ut;
 
 			//得到command
 			string command = string(Buff);
+
+			cout << "Receive the client ip " << Client_ip << " client Port " << Client_Port << "'s command : " << command << endl;
+			cout << "The Result : ";
 
 			vector<string> strVec;
 
@@ -94,6 +94,11 @@ bool Server::running() {
 
 				case PASS: {
 					Pass(strVec);
+					break;
+				}
+			   
+				case DIR: {
+					fileDir();
 					break;
 				}
 			}
@@ -131,98 +136,148 @@ bool Server::checkSock(int sock) {
 
 void Server::Pass(vector<string> strVec) {
 
+	//回送关于指令信息
 	if (USER_Status == 0) {
-		memset(Buff, 0, BUFFSIZE);
-		string err = "Please confirm the username before other cmd.\n";
-		strcpy(Buff, err.c_str());
-		cout << err << endl;
+		
+		string err = "Please confirm the username before other cmd.";
+		string sendErr = "Send PassWord Error Message occur error.";
+		sendERR(err, 0, sendErr, 1);
 
-		if (send(server, Buff, BUFFSIZE, 0) == -1) {
-			cout  << "Send PassWord Error Message occur error. \n";
-			return;
-		}
 		return;
 	}
 
 	if (PASS_Status == 1) {
-		memset(Buff, 0, BUFFSIZE);
-		string err = "Have confirmed  the username and password.\n";
-		strcpy(Buff, err.c_str());
-		cout << err << endl;
-
-		if (send(server, Buff, BUFFSIZE, 0) == -1) {
-			cout << "Send confirmed user and pass Error Message occur error \n";
-			return;
-		}
+		string err = "Have confirmed  the username and password.";
+		string sendErr = "Send confirmed user and pass Error Message occur error ";
+		sendERR(err, 0, sendErr, 1);
+		
 		return;
 	}
 
+	//会送指令处理信息
 	string PassWord = strVec[1];
 	if (PassWord == "1234") {
 		PASS_Status = 1;
+		string err = "The PassWord is OK. ";
+		string sendErr = "Send PassWord OK Message occur error. ";
+		sendERR(err, 1, sendErr, 1);
 
-		memset(Buff, 0, BUFFSIZE);
-		string err = "The PassWord is OK\n";
-		strcpy(Buff, err.c_str());
-
-		cout << err << endl;
-
-		if (send(server, Buff, BUFFSIZE, 0) == -1) {
-			cout << "Send PassWord OK Message occur error \n";
-			return;
-		}
 	}
 	else {
-
-		memset(Buff, 0, BUFFSIZE);
-		string err = "The PassWord is ERROR\n";
-		strcpy(Buff, err.c_str());
-		cout << err << endl;
-		if (send(server, Buff, BUFFSIZE, 0) == -1) {
-			cout << "Send PassWord Error Message occur error \n";
-			return;
-		}
+		PASS_Status = 0;
+		string err = "The PassWord is ERROR. ";
+		string sendErr = "Send PassWord Error Message occur error. ";
+		sendERR(err, 0, sendErr, 1);
 	}
 }
 
 void Server::User(vector<string> strVec) {
 	if (USER_Status == 1) {
-
-		memset(Buff, 0, BUFFSIZE);
-		string err = "Have confirmed the username \n";
-		strcpy(Buff, err.c_str());
-		cout << err << endl;
-
-		if (send(server, Buff, BUFFSIZE, 0) == -1) {
-			cout << "Send confirm user Error Message occur error. \n";
-			return;
-		}
-		return;
+		string err = "Have confirmed the username.";
+		string sendErr =  "Send confirm user Error Message occur error."; 
+		sendERR(err, 0, sendErr, 1);
 	}
 
 	string UserName = strVec[1];
 	if (UserName == "Mazeqi") {
-
 		USER_Status = 1;
-		string err = "The UserName is OK\n";
-		strcpy(Buff, err.c_str());
-		cout << err << endl;
-		if (send(server, Buff, BUFFSIZE, 0) == -1) {
-			cout << "Send UserName Error Message occur error \n";
-			return;
-		}
+
+		//发送错误信息
+		string err = "The UserName is OK.";
+		string sendErr = "Send UserName Error Message occur error.";
+		sendERR(err, 1, sendErr, 1);
+
 	}
 	else {
-		memset(Buff, 0, BUFFSIZE);
-		string err = "The UserName is ERROR\n";
-		strcpy(Buff, err.c_str());
-		cout << err << endl;
+		
+		string err = "The UserName is ERROR";
+		string sendErr = "Send UserName Error Message occur error.";
+		sendERR(err, 0, sendErr, 1);
+	}
+}
 
+void Server::sendERR(string err, int errStatus, string sendErr, int sendErrStatus) {
+
+	memset(Buff, 0, BUFFSIZE);
+	strcpy(Buff, err.c_str());
+	cout << err << endl;
+
+	if (send(server, Buff, BUFFSIZE, 0) == -1) {
+		cout << sendErr << endl;
+		return;
+	}
+
+	if (sendErrStatus) {
+		_itoa_s(errStatus, Buff, 10);
 		if (send(server, Buff, BUFFSIZE, 0) == -1) {
-			cout << "Send UserName Error Message occur error \n";
+			cout << sendErr << endl;
 			return;
 		}
 	}
+	
+}
+
+void Server::fileDir() {
+
+	//回送指令信息
+	if (confirmStatus() == false) {
+		return;
+	}
+
+	Util ut;
+	vector<string> fileVec = ut.dirFile("./");
+	int vecSize = fileVec.size();
+	
+	//先发送列表长度信息
+	string err = "The size of file is : " + to_string(vecSize);
+	err += "\n";
+	string sendErr = "Send the err of the file size occur error. ";
+	sendERR(err, 1, sendErr, 1);
+
+
+	//发送长度
+	memset(Buff, 0, BUFFSIZE);
+	_itoa_s(vecSize, Buff, 10);
+	if (send(server, Buff, BUFFSIZE, 0) == -1) {
+		cout << "Send the size of the file occur error \n";
+		return;
+	}
+
+	//发送列表
+	for (int i = 0; i < vecSize; i++) {
+
+		memset(Buff, 0, BUFFSIZE);
+		strcpy(Buff, fileVec[i].c_str());
+		cout << Buff << endl;
+
+		if (send(server, Buff, BUFFSIZE, 0) == -1) {
+			cout << "Send the err of the file name occur error \n";
+			return;
+		}
+
+	}
+	cout << endl;
+}
+
+bool Server::confirmStatus() {
+
+	if (USER_Status == 0) {
+		
+		string err = "Have not confirm the username. ";
+		string sendErr = "Send the message of having not confirmed the username occur error. ";
+		sendERR(err, 0, sendErr, 1);
+		return false;
+	}
+
+	if (PASS_Status == 0) {
+
+		string err = "Have not confirm the password. \n";
+		string sendErr = "Send the message of having not confirmed the password occur error ";
+		sendERR(err, 0, sendErr, 1);
+		return false;
+
+	}
+	return true;
 }
 
 CMD Server::commandParse(vector<string> &strVec,string command) {
@@ -230,14 +285,19 @@ CMD Server::commandParse(vector<string> &strVec,string command) {
 
 	strVec = ut.splitString(command, " ");
 
-	if (strVec.size() != 2) {
-		return ERR;
-	}
-
-
 	transform(strVec[0].begin(), strVec[0].end(), strVec[0].begin(), ::tolower);
 
+	int vecSize = strVec.size();
 
+	if (vecSize != 2) {
+		if (vecSize == 1 && (strVec[0] == "dir")){
+			return DIR;
+		}
+		else {
+			return ERR;
+		}
+
+	}
 	if (strVec[0] == "user") {
 		return USER;
 	}
@@ -246,9 +306,8 @@ CMD Server::commandParse(vector<string> &strVec,string command) {
 		return PASS;
 	}
 
-	if (strVec[0] == "dir") {
-		return DIR;
-	}
+	return ERR;
+
 
 }
 

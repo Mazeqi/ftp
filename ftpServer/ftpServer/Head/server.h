@@ -42,6 +42,12 @@ public:
 
 	void Pass(vector<string> strVec);
 
+	void fileDir();
+
+	bool confirmStatus();
+
+	void sendERR(string err, int errStatus, string sendErr, int sendErrStatus);
+
 
 private:
 

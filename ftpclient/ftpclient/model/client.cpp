@@ -56,8 +56,38 @@ void Client::menu() {
 				cliDir();
 				break;
 			}
+			
+			case ServerDIR: {
+				if (sendCommand(command) == true) {
+					serverDir();
+				}
+				break;
+			}
 		}
 	}
+}
+
+void Client::serverDir() {
+
+	//接收长度信息
+	memset(Buff, 0, BUFFSIZE);
+	if (recv(sockfd, Buff, BUFFSIZE, 0) == -1) {
+		cout << "Recv the size of file occur Error";
+		return;
+	}
+	int vecSize = atoi(Buff);
+
+	//输出文件列表
+	for (int i = 0; i < vecSize; i++) {
+		//接收长度信息
+		memset(Buff, 0, BUFFSIZE);
+		if (recv(sockfd, Buff, BUFFSIZE, 0) == -1) {
+			cout << "Recv the  file name occur Error";
+			return;
+		}
+		cout << Buff << endl;
+	}
+
 }
 
 void Client::cliDir() {
@@ -71,28 +101,39 @@ void Client::cliDir() {
 	for (int i = 0; i < dirVec.size(); i++) {
 		cout << dirVec[i] << endl;
 	}
-
-
 }
 
-void Client::sendCommand(string command) {
+bool Client::sendCommand(string command) {
 
 	memset(Buff, 0, BUFFSIZE);
 	strcpy(Buff, command.c_str());
 
 	if (send(sockfd, Buff, BUFFSIZE, 0) == -1) {
 		cout << "Send User Command Error \n";
-		return;
+		return false;
 	}
 
 	//接收返回的指令对错信息
 	memset(Buff, 0, BUFFSIZE);
 	if (recv(sockfd, Buff, BUFFSIZE, 0) == -1) {
 		cout << "Recv the Return of User Command Error " << errno << strerror(errno) << endl;
-		return;
+		return false;
 	}
 	string recvBuff = string(Buff);
 	cout << recvBuff << endl;
+
+	if (recv(sockfd, Buff, BUFFSIZE, 0) == -1) {
+		cout << "Recv the Return of User Command status Error " << errno << strerror(errno) << endl;
+		return false;
+	}
+
+	int status = atoi(Buff);
+	if (status == 1) {
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
 bool Client::running() {
@@ -185,9 +226,13 @@ CMD Client::commandParse(vector<string> &strVec,string command) {
 
 	strVec = ut.splitString(command, " ");
 
-	transform(strVec[0].begin(), strVec[0].end(), strVec[0].begin(), ::tolower);
-
 	int vecSize = strVec.size();
+
+	if (vecSize <= 0) {
+		return ERR;
+	}
+
+	transform(strVec[0].begin(), strVec[0].end(), strVec[0].begin(), ::tolower);
 
 	if (vecSize != 2) {
 		if (vecSize == 1 && (strVec[0] == "dir" || strVec[0] == "!dir")) {
@@ -199,9 +244,15 @@ CMD Client::commandParse(vector<string> &strVec,string command) {
 	
 	}
 
+
 	if (strVec[0] == "!dir") {
 		return CliDIR;
 	}
+
+	if (strVec[0] == "dir") {
+		return ServerDIR;
+	}
+
 	if (strVec[0] == "user") {
 		return USER;
 	}
@@ -210,7 +261,7 @@ CMD Client::commandParse(vector<string> &strVec,string command) {
 		return PASS;
 	}
 
-	
+	return ERR;
 }
 
 
