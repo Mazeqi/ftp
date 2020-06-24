@@ -17,7 +17,10 @@ enum CMD {
 	ERR = 0,
 	USER = 1,
 	PASS = 2,
-	DIR = 3
+	DIR = 3,
+	PUT = 4,
+	GET = 5,
+
 };
 
 using namespace std;
@@ -48,6 +51,7 @@ public:
 
 	void sendERR(string err, int errStatus, string sendErr, int sendErrStatus);
 
+	bool sendFile(vector<string> strVec);
 
 private:
 

@@ -16,15 +16,19 @@
 using namespace std;
 
  enum CMD{
+	SPACE = -1,
 	ERR = 0,
 	USER = 1,
 	PASS = 2,
 	ServerDIR = 3,
-	CliDIR = 4
+	CliDIR = 4,
+	GET = 5,
+	PUT = 6,
 } ;
 class Client {
 
 public:
+	Client();
 
 	~Client();
 
@@ -46,10 +50,14 @@ public:
 
 	void serverDir();
 
+	void Get(vector<string> strVec);
+
 private:
 
 	SOCKET sockfd;
 
 	char Buff[BUFFSIZE];
+
+	string storePath;
 };
 

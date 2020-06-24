@@ -15,7 +15,9 @@
 #pragma comment(lib,"Ws2_32.lib")
 
 using namespace std;
-
+Client::Client() {
+	storePath = "./";
+}
 Client::~Client() {
 	closesocket(sockfd);
 	WSACleanup();
@@ -63,8 +65,86 @@ void Client::menu() {
 				}
 				break;
 			}
+		    
+			case GET: {
+				if (sendCommand(command) == true) {
+					Get(strVec);
+				}
+				break;
+			}
 		}
 	}
+}
+
+void Client::Get(vector <string> strVec) {
+
+	string filename = strVec[1];
+
+	//接受打开文件的信息
+	//接收返回的指令对错信息
+	memset(Buff, 0, BUFFSIZE);
+	if (recv(sockfd, Buff, BUFFSIZE, 0) == -1) {
+		cout << "Recv the Return of open file occur Error " << errno << strerror(errno) << endl;
+		return ;
+	}
+	string recvBuff = string(Buff);
+	cout << recvBuff << endl;
+
+	if (recv(sockfd, Buff, BUFFSIZE, 0) == -1) {
+		cout << "Recv the Return of open file  status occur Error " << errno << strerror(errno) << endl;
+		return;
+	}
+
+	int status = atoi(Buff);
+	if (status == 0) {
+		return;
+	}
+
+	//接收文件大小的信息
+	memset(Buff, 0, BUFFSIZE);
+
+	recv(sockfd, Buff, BUFFSIZE, 0);
+
+	int fileSize = atoi(Buff);
+
+	cout << "File's size is " << fileSize << endl;
+
+	//打开文件
+	string filepath = storePath + filename;
+
+	ofstream storeFile(filepath, ios::binary);
+
+	if (!storeFile) {
+		cout << "Create File Failed!\n";
+		return;
+	}
+
+
+	//接收文件内容，以binary形式接收
+	int fileLen = fileSize;
+	int recvLen = 0;
+	while (true) {
+		memset(Buff, 0, sizeof(Buff));
+		int len = recv(sockfd, Buff, BUFFSIZE, 0);
+		if (len == -1) {
+			cout << "recv error" << errno << strerror(errno);
+			return;
+		}
+
+		storeFile.write(Buff, BUFFSIZE);
+		recvLen += BUFFSIZE;
+
+		cout << "Receive " << recvLen << "/" << fileSize << "  bytes\n";
+
+		fileLen -= BUFFSIZE;
+		if (fileLen <= 0) {
+			break;
+		}
+	}
+
+	storeFile.close();
+	cout << "Write file successful\n";
+
 }
 
 void Client::serverDir() {
@@ -228,8 +308,8 @@ CMD Client::commandParse(vector<string> &strVec,string command) {
 
 	int vecSize = strVec.size();
 
-	if (vecSize <= 0) {
-		return ERR;
+	if (vecSize == 0) {
+		return SPACE;
 	}
 
 	transform(strVec[0].begin(), strVec[0].end(), strVec[0].begin(), ::tolower);
@@ -243,7 +323,6 @@ CMD Client::commandParse(vector<string> &strVec,string command) {
 		}
 	
 	}
-
 
 	if (strVec[0] == "!dir") {
 		return CliDIR;
@@ -259,6 +338,10 @@ CMD Client::commandParse(vector<string> &strVec,string command) {
 
 	if (strVec[0] == "pass") {
 		return PASS;
+	}
+
+	if (strVec[0] == "get") {
+		return GET;
 	}
 
 	return ERR;

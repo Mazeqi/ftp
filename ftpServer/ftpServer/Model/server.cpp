@@ -9,6 +9,7 @@
 #include<string>
 #include<algorithm>
 #include"../Head/Util.h"
+#include<direct.h>
 #pragma comment(lib,"Ws2_32.lib")
 
 //void server(SOCKET s);
@@ -101,12 +102,118 @@ bool Server::running() {
 					fileDir();
 					break;
 				}
+
+				case PUT: {
+					sendFile(strVec);
+					break;
+				}
+
 			}
 
 		}
 	}
 	
 	return true;
+}
+
+bool Server::sendFile(vector<string> strVec) {
+
+	if (confirmStatus() == false) {
+		return false;
+	}
+
+	//获取当前目录
+	//此信息回送给sendcommand
+	char* workPath = _getcwd(NULL, 0);
+
+	if (workPath == NULL) {
+		string err = "Get  work path failed .";
+		string sendErr = "Send message of getting work path occur error.";
+		sendERR(err, 0, sendErr, 1);
+		return false;
+	}
+	else {
+		string err = "Get file path success";
+		string sendErr = "Send message of file path success occur error.";
+		sendERR(err, 1, sendErr, 1);
+		cout << "Current work path is " << workPath << endl;
+	}
+
+	//文件
+	string filePath = strVec[1];
+
+	//文件目录
+	string absoPath = workPath;
+
+	absoPath += "/";
+	absoPath += filePath;
+
+	ifstream file(absoPath.c_str(), ios::binary);
+
+	//发送文件打开的信息
+	if (!file) {
+		string err = "Open the file  failed.";
+		string sendErr = "Send the message of open the file occur error";
+		sendERR(err, 0, sendErr, 1);
+		cout << "Open the file : " << absoPath << " failed " << endl;
+		return false;
+	}
+	else {
+		string err = "Open the file  success.";
+		string sendErr = "Send the message of open the file occur error";
+		sendERR(err, 1, sendErr, 1);
+		cout << "Open the file : " << absoPath << " success " << endl;
+		
+	}
+
+	//获取文件的长度
+	long fBegin = file.tellg();
+	file.seekg(0, ios::end);
+	long fEnd = file.tellg();
+	int fileSize = fEnd - fBegin;
+
+	
+	string err = "File's Size is " + to_string(fileSize);
+	err += " bytes";
+	string sendErr = "Send message of file size occur error";
+	cout << err << endl;
+
+	//发送文件的长度
+	memset(Buff, 0, BUFFSIZE);
+	_itoa_s(fileSize, Buff, 10);
+	if (send(server, Buff, BUFFSIZE, 0) == -1) {
+		cout << sendErr << endl;
+		return false;
+	}
+
+	cout << "Begin to read file..." << endl;
+	file.seekg(0, ios::beg);
+
+	int sendLen = 0;
+	while (true) {
+		memset(Buff, 0, BUFFSIZE);
+		file.read(Buff, BUFFSIZE);
+
+		int len = send(server, Buff, BUFFSIZE, 0);
+
+		if (len == -1) {
+			cout << "Send file occur error " << errno << strerror(errno);
+			return false;
+		}
+
+		sendLen += BUFFSIZE;
+		cout << "Send " << sendLen << "/" << fileSize << "bytes\n";
+
+		if (sendLen >= fileSize) {
+			break;
+		}
+	}
+
+	file.close();
+	cout << "Send file successful \n";
+
+	return true;
+
 }
 
 bool Server::checkSock(int sock) {
@@ -306,6 +413,10 @@ CMD Server::commandParse(vector<string> &strVec,string command) {
 		return PASS;
 	}
 
+	//client发来get指令，则服务器要put一个文件到client
+	if (strVec[0] == "get") {
+		return PUT;
+	}
 	return ERR;
 
 
