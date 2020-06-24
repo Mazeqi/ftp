@@ -1,4 +1,2 @@
-﻿  server.cpp
-D:\VS_Project\ftp\ftpServer\ftpServer\Model\server.cpp(170,14): warning C4244: “初始化”: 从“std::streamoff”转换到“long”，可能丢失数据
-D:\VS_Project\ftp\ftpServer\ftpServer\Model\server.cpp(172,12): warning C4244: “初始化”: 从“std::streamoff”转换到“long”，可能丢失数据
+﻿  Util.cpp
   ftpServer.vcxproj -> D:\VS_Project\ftp\ftpServer\Debug\ftpServer.exe

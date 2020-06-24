@@ -1,9 +1,2 @@
-﻿  client.cpp
-D:\VS_Project\ftp\ftpclient\ftpclient\model\client.cpp(181,20): warning C4018: “<”: 有符号/无符号不匹配
-D:\VS_Project\ftp\ftpclient\ftpclient\model\client.cpp(236,10): warning C4477: “printf”: 格式字符串“%S”需要类型“wchar_t *”的参数，但可变参数 2 拥有了类型“char *”
-D:\VS_Project\ftp\ftpclient\ftpclient\model\client.cpp(236,10): message : 请考虑在格式字符串中使用“%hS”
-D:\VS_Project\ftp\ftpclient\ftpclient\model\client.cpp(236,10): message : 请考虑在格式字符串中使用“%TS”
-D:\VS_Project\ftp\ftpclient\ftpclient\model\client.cpp(379,14): warning C4244: “初始化”: 从“std::streamoff”转换到“long”，可能丢失数据
-D:\VS_Project\ftp\ftpclient\ftpclient\model\client.cpp(381,12): warning C4244: “初始化”: 从“std::streamoff”转换到“long”，可能丢失数据
-D:\VS_Project\ftp\ftpclient\ftpclient\model\client.cpp(301): warning C4715: “Client::running”: 不是所有的控件路径都返回值
+﻿  util.cpp
   ftpclient.vcxproj -> D:\VS_Project\ftp\ftpclient\Debug\ftpclient.exe

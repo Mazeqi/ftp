@@ -40,6 +40,7 @@ void Client::menu() {
 		vector<string> strVec;
 		CMD cmd = commandParse(strVec,command);
 
+		
 		switch (cmd) {
 
 			case ERR:
@@ -58,22 +59,141 @@ void Client::menu() {
 				cliDir();
 				break;
 			}
-			
+
 			case ServerDIR: {
 				if (sendCommand(command) == true) {
 					serverDir();
 				}
+
 				break;
 			}
-		    
+
 			case GET: {
 				if (sendCommand(command) == true) {
 					Get(strVec);
 				}
 				break;
 			}
+
+			case PUT: {
+				if (sendCommand(command) == true) {
+					Put(strVec);
+				}
+				break;
+			}
+
+			case EXIT: {
+				exit(0);
+				break;
+			}
 		}
 	}
+}
+
+bool Client::checkSock(int sock) {
+	fd_set   fds;
+	char buf[2];
+	int nbread;
+
+	FD_ZERO(&fds);
+	FD_SET(sock, &fds);
+
+	if (select(sock + 1, &fds, (fd_set*)0, (fd_set*)0, NULL) == -1) {
+		//log(LOG_ERR,"select(): %s\n",strerror(errno)) ;
+		return false;
+	}
+	if (!FD_ISSET(sock, &fds)) {
+		//log(LOG_ERR,"select() returns OK but FD_ISSET not\n") ;
+		return false;
+	}
+	/* read one byte from socket */
+	nbread = recv(sock, buf, 1, MSG_PEEK);
+	if (nbread <= 0) {
+		return false;
+	}
+
+	return true;
+}
+
+void Client::Put(vector<string> strVec) {
+	char* workPath = _getcwd(NULL, 0);
+
+	if (workPath == NULL) {
+		string err = "Get  work path failed .";
+		cout << err << endl;
+	
+		return;
+	}
+	else {
+		cout << "Current work path is " << workPath << endl;
+	}
+
+	//文件
+	string filename = strVec[1];
+
+	//文件目录
+	string absoPath = workPath;
+
+	absoPath += "/";
+	absoPath += filename;
+
+	ifstream file(absoPath.c_str(), ios::binary);
+
+	//文件打开的信息
+	if (!file) {
+		cout << "Open the file : " << filename << " failed " << endl;
+	}
+	else {
+		cout << "Open the file : " << filename << " success " << endl;
+
+	}
+
+	//获取文件的长度
+	long fBegin = file.tellg();
+	file.seekg(0, ios::end);
+	long fEnd = file.tellg();
+	int fileSize = fEnd - fBegin;
+
+
+	string err = "File's Size is " + to_string(fileSize);
+	err += " bytes";
+	
+	cout << err << endl;
+
+	//发送文件的长度
+	memset(Buff, 0, BUFFSIZE);
+	_itoa_s(fileSize, Buff, 10);
+	if (send(sockfd, Buff, BUFFSIZE, 0) == -1) {
+		string sendErr = "Send message of file size occur error";
+		cout << sendErr << endl;
+		return;
+	}
+
+	cout << "Begin to read file..." << endl;
+	file.seekg(0, ios::beg);
+
+	int sendLen = 0;
+	while (true) {
+		memset(Buff, 0, BUFFSIZE);
+		file.read(Buff, BUFFSIZE);
+
+		int len = send(sockfd, Buff, BUFFSIZE, 0);
+
+		if (len == -1) {
+			cout << "Send file occur error " << errno << strerror(errno);
+			return;
+		}
+
+		sendLen += BUFFSIZE;
+		cout << "Send " << sendLen << "/" << fileSize << "bytes\n";
+
+		if (sendLen >= fileSize) {
+			break;
+		}
+	}
+
+	file.close();
+	cout << "Send file successful \n";
 }
 
 void Client::Get(vector <string> strVec) {
@@ -143,9 +263,10 @@ void Client::Get(vector <string> strVec) {
 	}
 
 	storeFile.close();
-	cout << "Write file successful\n";
-
+	cout << "Write file successfully\n";
 }
+
+
 
 void Client::serverDir() {
 
@@ -192,6 +313,7 @@ bool Client::sendCommand(string command) {
 		cout << "Send User Command Error \n";
 		return false;
 	}
+   
 
 	//接收返回的指令对错信息
 	memset(Buff, 0, BUFFSIZE);
@@ -280,24 +402,7 @@ bool Client::running() {
 	cout << "Recv Connect Message : " << Buff << endl;
 	
 	menu();
-	/*
-	string filePath;
-	cout << "please input file : ";
-	cin >> filePath;
 
-	//获取文件名
-	Util ut;
-	vector<string> PathVec = ut.splitString(filePath, "/");
-	int VecSize = PathVec.size();
-	string filename = PathVec[VecSize - 1];
-	strcpy(Buff, filename.c_str());
-
-	//发送文件名
-	send(sockfd, Buff, BUFFSIZE, 0);
-	
-	//发送文件
-	sendFile(filename);
-	*/
 }
 
 CMD Client::commandParse(vector<string> &strVec,string command) {
@@ -315,8 +420,20 @@ CMD Client::commandParse(vector<string> &strVec,string command) {
 	transform(strVec[0].begin(), strVec[0].end(), strVec[0].begin(), ::tolower);
 
 	if (vecSize != 2) {
-		if (vecSize == 1 && (strVec[0] == "dir" || strVec[0] == "!dir")) {
+		if (vecSize == 1) {
 
+			if (strVec[0] == "!dir") {
+				return CliDIR;
+			}
+
+			if (strVec[0] == "dir") {
+				return ServerDIR;
+			}
+
+			if (strVec[0] == "exit") {
+				return EXIT;
+			}
+			return ERR;
 		}
 		else {
 			return ERR;
@@ -324,13 +441,7 @@ CMD Client::commandParse(vector<string> &strVec,string command) {
 	
 	}
 
-	if (strVec[0] == "!dir") {
-		return CliDIR;
-	}
-
-	if (strVec[0] == "dir") {
-		return ServerDIR;
-	}
+	
 
 	if (strVec[0] == "user") {
 		return USER;
@@ -344,6 +455,9 @@ CMD Client::commandParse(vector<string> &strVec,string command) {
 		return GET;
 	}
 
+	if (strVec[0] == "put") {
+		return PUT;
+	}
 	return ERR;
 }
 

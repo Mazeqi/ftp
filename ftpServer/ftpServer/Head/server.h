@@ -32,7 +32,7 @@ public:
 
 	bool running();
 
-	bool RecvFile(string filename);
+	bool recvFile(vector<string> strVec);
 
 	void WelCome();
 

@@ -51,6 +51,7 @@ vector<string> Util::dirFile(string path)
     }
     do
     {
+        
         char buf[1024];
         strcpy(buf, fileInfo.name);
 
@@ -59,15 +60,16 @@ vector<string> Util::dirFile(string path)
         string fileName = string(buf);
 
         //cout << fileName;
-
-
         //判断文件的属性是文件夹还是文件
         if (fileInfo.attrib & _A_SUBDIR) {
-            fileName += "  [folder]";
+            // fileName += "  [folder]";
+            continue;
         }
         else {
             fileName += "  [file]";
         }
+
+      
         dirVec.push_back(fileName);
     } while (_findnext(hFile, &fileInfo) == 0);
     _findclose(hFile);

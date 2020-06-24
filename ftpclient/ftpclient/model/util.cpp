@@ -62,7 +62,8 @@ vector<string> Util::dirFile(string path)
 
         //判断文件的属性是文件夹还是文件
         if (fileInfo.attrib & _A_SUBDIR) {
-            fileName += "  [folder]";
+           // fileName += "  [folder]";
+            continue;
         }
         else {
             fileName += "  [file]";

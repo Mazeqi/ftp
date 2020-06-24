@@ -15,7 +15,7 @@
 //void server(SOCKET s);
 Server::Server(SOCKET s):server(s) 
 {
-	storePath = "./file";
+	storePath = "./";
 	USER_Status = 0;
 	PASS_Status = 0;
 }
@@ -105,6 +105,11 @@ bool Server::running() {
 
 				case PUT: {
 					sendFile(strVec);
+					break;
+				}
+
+				case GET: {
+					recvFile(strVec);
 					break;
 				}
 
@@ -417,12 +422,27 @@ CMD Server::commandParse(vector<string> &strVec,string command) {
 	if (strVec[0] == "get") {
 		return PUT;
 	}
+
+	if (strVec[0] == "put") {
+		return GET;
+	}
 	return ERR;
 
 
 }
 
-bool Server::RecvFile(string filename) {
+bool Server::recvFile(vector<string> strVec) {
+
+	if (confirmStatus() == false) {
+		return false;
+	}
+
+	//回应command指令
+	memset(Buff, 0, BUFFSIZE);
+	string err = "Server is ok !";
+	string sendErr = "Send Server ok occur error";
+	sendERR(err, 1, sendErr, 1);
+
 
 	
 	//接收文件大小的信息
@@ -434,6 +454,7 @@ bool Server::RecvFile(string filename) {
 
 	cout << "File's size is " << fileSize << endl;
 
+	string filename = strVec[1];
 	//打开文件
 	string filepath = storePath + filename;
 
@@ -468,7 +489,12 @@ bool Server::RecvFile(string filename) {
 	}
 
 	storeFile.close();
-	cout << "Write file successful\n";
+	
+	//接收完成信息
+	/*memset(Buff, 0, BUFFSIZE);
+	string err = "Server receive file successfully !";
+	string sendErr = "Send Server  file successfully  occur error";
+	sendERR(err, 0, sendErr, 0);*/
 
 	return true;
 

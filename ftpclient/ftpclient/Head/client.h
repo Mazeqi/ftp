@@ -15,7 +15,8 @@
 
 using namespace std;
 
- enum CMD{
+enum CMD {
+	EXIT = -2,
 	SPACE = -1,
 	ERR = 0,
 	USER = 1,
@@ -24,6 +25,7 @@ using namespace std;
 	CliDIR = 4,
 	GET = 5,
 	PUT = 6,
+
 } ;
 class Client {
 
@@ -51,6 +53,10 @@ public:
 	void serverDir();
 
 	void Get(vector<string> strVec);
+
+	void Put(vector<string> strVec);
+
+	bool checkSock(int sock);
 
 private:
 
