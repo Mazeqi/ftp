@@ -288,6 +288,7 @@ void Server::User(vector<string> strVec) {
 		string err = "Have confirmed the username.";
 		string sendErr =  "Send confirm user Error Message occur error."; 
 		sendERR(err, 0, sendErr, 1);
+		return;
 	}
 
 	string UserName = strVec[1];
